@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2 id="heading">Hello, World!</h2>
+    <button id="button">Click me</button>
+    <button id="reset">Reset</button>
+
+    <script>
+        let click = 0
+        const heading = document.getElementById("heading")
+        const button = document.getElementById("button")
+        const reset = document.getElementById("reset")
+
+        button.addEventListener('click', () => {
+            click++;
+
+            let isElement = document.getElementById("click");
+            if (isElement) {
+                isElement.innerText = click;
+            } else {
+                displayClick()
+            }
+            heading.innerText = click % 2 === 0 ? "Hello, World" : "Hello JavaScript"
+        })
+
+        reset.addEventListener('click', () => {
+            click = 0;
+            heading.innerText = "Hello, World"; // Reset heading text
+            let clickElement = document.getElementById("click");
+            if (clickElement) {
+                clickElement.innerText = click;
+            }
+        });
+
+        const displayClick = () => {
+            const addClick = document.createElement('p')
+            addClick.setAttribute("id", 'click')
+            addClick.innerText = click;
+            document.body.appendChild(addClick)
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .form-container {
+            background-color: antiquewhite;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            gap: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 60vw;
+            border-collapse: collapse;
+            background-color: white;
+            text-align: center;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <div class="form-container">
+            <form id="form">
+                <div class="form-row">
+                    <label for="name">Name</label>
+                    <input id="name" name="full-name" type="text" placeholder="Full Name" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="studentClass">Class</label>
+                    <input id="studentClass" name="class" type="text" placeholder="Class" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="age">Age</label>
+                    <input id="age" name="age" type="number" min="0" placeholder="Age" required>
+                </div>
+
+                <button type="submit">Save</button>
+            </form>
+        </div>
+
+        <div class="table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Age</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("#form");
+            const tableBody = document.querySelector("#table-body");
+
+            const handleForm = (e) => {
+                e.preventDefault(); // Prevent page refresh
+
+                // Get input values
+                const nameValue = document.getElementById("name").value.trim();
+                const classValue = document.getElementById("studentClass").value.trim();
+                const ageValue = document.getElementById("age").value.trim();
+
+                // Create new row
+                const addStudent = document.createElement("tr");
+
+                // Create table cells
+                const studentName = document.createElement("td");
+                studentName.innerText = nameValue;
+
+                const studentClass = document.createElement("td");
+                studentClass.innerText = classValue;
+
+                const studentAge = document.createElement("td");
+                studentAge.innerText = ageValue;
+
+                const newData = { name: nameValue, class: classValue, age: ageValue };
+                const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
+                data.push(newData);
+                localStorage.setItem('data', JSON.stringify(data));
+
+
+
+
+                //delete
+                const deleteRow = document.createElement("td");
+                const deleteButton = document.createElement("button");
+                deleteButton.innerText = "Delete";
+                deleteButton.setAttribute('class', 'delete-btn');
+                deleteButton.addEventListener("click", () => { addStudent.remove() });
+
+                deleteRow.appendChild(deleteButton);
+                addStudent.appendChild(studentName);
+                addStudent.appendChild(studentClass);
+                addStudent.appendChild(studentAge);
+                addStudent.appendChild(deleteRow);
+
+                // Add to table
+                tableBody.appendChild(addStudent);
+
+                // Reset form
+                form.reset();
+            };
+
+            form.addEventListener("submit", handleForm);
+        });
+    </script>
+</body>
+
+</html>
