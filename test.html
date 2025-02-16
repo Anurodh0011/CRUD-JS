@@ -1,48 +1,14 @@
 <!DOCTYPE html>
-<html>
-<style>
-    #container {
-        width: 400px;
-        height: 400px;
-        position: relative;
-        background: yellow;
-    }
+<html lang="en">
 
-    #animate {
-        width: 50px;
-        height: 50px;
-        position: absolute;
-        background-color: red;
-    }
-</style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
 
 <body>
-
-    <p><button onclick="myMove()">Click Me</button></p>
-
-    <div id="container">
-        <div id="animate"></div>
-    </div>
-
-    <script>
-        function myMove() {
-            let id = null;
-            const elem = document.getElementById("animate");
-            let pos = 0;
-            clearInterval(id);
-            id = setInterval(frame, 5);
-            function frame() {
-                if (pos == 350) {
-                    clearInterval(id);
-                } else {
-                    pos++;
-                    elem.style.top = pos + "px";
-                    elem.style.left = pos + "px";
-                }
-            }
-        }
-    </script>
-
+    <dialog open>This is an open dialog window</dialog>
 </body>
 
 </html>

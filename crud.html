@@ -30,7 +30,10 @@
             display: flex;
             flex-direction: column;
             width: 300px;
+            height: auto;
             gap: 15px;
+            transition: opacity 0.3s ease-in-out;
+            position: relative;
         }
 
         input {
@@ -87,12 +90,49 @@
         .delete-btn:hover {
             background-color: darkred;
         }
+
+        .addStudentButton {
+            background-color: #4CAF50;
+        }
+
+        .addStudentButton:hover {
+            background-color: #218838;
+        }
+
+        .visiblity-0 {
+            opacity: 0;
+            height: 0 !important
+        }
+
+        .visiblity-1 {
+            opacity: 1 !important;
+            height: auto !important;
+        }
+
+        .close {
+            background-color: red;
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            top: 0;
+            right: 0;
+            font-size: 12px;
+        }
+
+        .close:hover {
+            background-color: darkred;
+        }
     </style>
 </head>
 
 <body>
     <div class="main-container">
-        <div class="form-container">
+
+        <button class="addStudentButton">Add Student</button>
+
+        <div class="form-container visiblity-0">
+            <button type="button" class="close">*</button>
             <form id="form">
                 <div class="form-row">
                     <label for="name">Name</label>
@@ -136,17 +176,17 @@
             const tableBody = document.querySelector("#table-body");
 
             const handleForm = (e) => {
-                e.preventDefault(); // Prevent page refresh
+                e.preventDefault(); // prevent page refresh
 
-                // Get input values
+                // get input values
                 const nameValue = document.getElementById("name").value.trim();
                 const classValue = document.getElementById("studentClass").value.trim();
                 const ageValue = document.getElementById("age").value.trim();
 
-                // Create new row
+                //new row
                 const addStudent = document.createElement("tr");
 
-                // Create table cells
+                // cell
                 const studentName = document.createElement("td");
                 studentName.innerText = nameValue;
 
@@ -156,36 +196,41 @@
                 const studentAge = document.createElement("td");
                 studentAge.innerText = ageValue;
 
-                const newData = { name: nameValue, class: classValue, age: ageValue };
+                //adding array of objects to the local storage. 
+                const newData = { name: nameValue, class: classValue, age: ageValue }
                 const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
-                data.push(newData);
-                localStorage.setItem('data', JSON.stringify(data));
-
-
-
+                data.push(newData)
+                localStorage.setItem('data', JSON.stringify(data))
 
                 //delete
-                const deleteRow = document.createElement("td");
-                const deleteButton = document.createElement("button");
-                deleteButton.innerText = "Delete";
-                deleteButton.setAttribute('class', 'delete-btn');
-                deleteButton.addEventListener("click", () => { addStudent.remove() });
+                const deleteRow = document.createElement("td")
+                const deleteButton = document.createElement("button")
+                deleteButton.innerText = "Delete"
+                deleteButton.setAttribute('class', 'delete-btn')
+                deleteButton.addEventListener("click", () => { addStudent.remove() })
 
-                deleteRow.appendChild(deleteButton);
-                addStudent.appendChild(studentName);
-                addStudent.appendChild(studentClass);
-                addStudent.appendChild(studentAge);
-                addStudent.appendChild(deleteRow);
+                deleteRow.appendChild(deleteButton)
+                addStudent.appendChild(studentName)
+                addStudent.appendChild(studentClass)
+                addStudent.appendChild(studentAge)
+                addStudent.appendChild(deleteRow)
 
-                // Add to table
-                tableBody.appendChild(addStudent);
+                tableBody.appendChild(addStudent)
 
-                // Reset form
                 form.reset();
             };
 
-            form.addEventListener("submit", handleForm);
+            const handleToggle = (e) => {
+                e.preventDefault()
+                const formDisplay = document.querySelector('.form-container')
+                formDisplay.classList.toggle('visiblity-1')
+            }
+
+            form.addEventListener("submit", handleForm)
+            document.querySelector('.addStudentButton').addEventListener('click', handleToggle)
         });
+
+
     </script>
 </body>
 
