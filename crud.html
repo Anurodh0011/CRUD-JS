@@ -99,14 +99,12 @@
             background-color: #218838;
         }
 
-        .visiblity-0 {
-            opacity: 0;
-            height: 0 !important
+        .hideForm {
+            display: none;
         }
 
-        .visiblity-1 {
-            opacity: 1 !important;
-            height: auto !important;
+        .showForm {
+            display: block;
         }
 
         .close {
@@ -131,7 +129,7 @@
 
         <button class="addStudentButton">Add Student</button>
 
-        <div class="form-container visiblity-0">
+        <div class="form-container hideForm">
             <button type="button" class="close">*</button>
             <form id="form">
                 <div class="form-row">
@@ -175,62 +173,83 @@
             const form = document.querySelector("#form");
             const tableBody = document.querySelector("#table-body");
 
-            const handleForm = (e) => {
-                e.preventDefault(); // prevent page refresh
 
-                // get input values
-                const nameValue = document.getElementById("name").value.trim();
-                const classValue = document.getElementById("studentClass").value.trim();
-                const ageValue = document.getElementById("age").value.trim();
+
+            function getContent(item, parentElem) {
+                const content = `<td>${item.name}</td><td>${item.class}</td><td>${item.age}</td><td><button class="delete-btn">Delete</button></td>`;
+                return content;
+
+            }
+
+            // load localstorage  data
+            const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
+            data.forEach(item => {
+                const trElem = document.createElement('tr');
+                trElem.innerHTML = getContent(item, trElem);
+                tableBody.append(trElem);
+            });
+            const handleDelete = () => {
+                const deleteBtns = document.querySelectorAll('.delete-btn');
+                deleteBtns.forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const parentTr = btn.closest("tr");
+                        const name = parentTr.children[0].textContent;
+                        const studentClass = parentTr.children[1].textContent;
+                        const age = parentTr.children[2].textContent;
+
+                        // Get data from local storage
+                        let data = JSON.parse(localStorage.getItem('data')) || [];
+
+                        // Filter out the deleted item
+                        data = data.filter(item => item.name !== name || item.class !== studentClass || item.age !== age);
+
+                        // Update local storage
+                        localStorage.setItem('data', JSON.stringify(data));
+
+                        // Remove row from table
+                        parentTr.remove();
+                    });
+                });
+            };
+
+            // registering the delete event
+            handleDelete();
+
+
+            const handleForm = (e) => {
+                e.preventDefault() // prevent from page refresh
+
+                // get input
+                const nameValue = document.getElementById("name").value.trim()
+                const classValue = document.getElementById("studentClass").value.trim()
+                const ageValue = document.getElementById("age").value.trim()
 
                 //new row
-                const addStudent = document.createElement("tr");
+                const addStudent = document.createElement("tr")
 
-                // cell
-                const studentName = document.createElement("td");
-                studentName.innerText = nameValue;
-
-                const studentClass = document.createElement("td");
-                studentClass.innerText = classValue;
-
-                const studentAge = document.createElement("td");
-                studentAge.innerText = ageValue;
-
-                //adding array of objects to the local storage. 
                 const newData = { name: nameValue, class: classValue, age: ageValue }
+
+                //local storage. 
                 const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
                 data.push(newData)
                 localStorage.setItem('data', JSON.stringify(data))
 
-                //delete
-                const deleteRow = document.createElement("td")
-                const deleteButton = document.createElement("button")
-                deleteButton.innerText = "Delete"
-                deleteButton.setAttribute('class', 'delete-btn')
-                deleteButton.addEventListener("click", () => { addStudent.remove() })
-
-                deleteRow.appendChild(deleteButton)
-                addStudent.appendChild(studentName)
-                addStudent.appendChild(studentClass)
-                addStudent.appendChild(studentAge)
-                addStudent.appendChild(deleteRow)
-
-                tableBody.appendChild(addStudent)
-
+                addStudent.innerHTML = getContent(newData, addStudent);
+                tableBody.appendChild(addStudent);
+                // resiger the delete event 
+                handleDelete();
                 form.reset();
-            };
+            }
 
             const handleToggle = (e) => {
                 e.preventDefault()
                 const formDisplay = document.querySelector('.form-container')
-                formDisplay.classList.toggle('visiblity-1')
+                formDisplay.classList.toggle('showForm')
             }
 
             form.addEventListener("submit", handleForm)
             document.querySelector('.addStudentButton').addEventListener('click', handleToggle)
         });
-
-
     </script>
 </body>
 
