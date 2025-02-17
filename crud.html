@@ -91,11 +91,11 @@
             background-color: darkred;
         }
 
-        .addStudentButton {
+        .studentElemButton {
             background-color: #4CAF50;
         }
 
-        .addStudentButton:hover {
+        .studentElemButton:hover {
             background-color: #218838;
         }
 
@@ -106,32 +106,19 @@
         .showForm {
             display: block;
         }
-
-        .close {
-            background-color: red;
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            top: 0;
-            right: 0;
-            font-size: 12px;
-        }
-
-        .close:hover {
-            background-color: darkred;
-        }
     </style>
 </head>
 
 <body>
     <div class="main-container">
 
-        <button class="addStudentButton">Add Student</button>
+        <button class="studentElemButton">Add Student</button>
 
         <div class="form-container hideForm">
-            <button type="button" class="close">*</button>
             <form id="form">
+
+                <input name="id" value="" hidden />
+
                 <div class="form-row">
                     <label for="name">Name</label>
                     <input id="name" name="full-name" type="text" placeholder="Full Name" required>
@@ -173,84 +160,92 @@
             const form = document.querySelector("#form");
             const tableBody = document.querySelector("#table-body");
 
-
-
-            function getContent(item, parentElem) {
-                const content = `<td>${item.name}</td><td>${item.class}</td><td>${item.age}</td><td><button class="delete-btn">Delete</button></td>`;
-                return content;
-
+            function getContent(item) {
+                return `<td>${item.name}</td>
+                        <td>${item.class}</td>
+                        <td>${item.age}</td>
+                        <td><button class="delete-btn">Delete</button></td>`;
             }
 
-            // load localstorage  data
-            const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
+            function randomValue() { // generate unique id
+                return Math.random().toString().substr(2, 4)
+            }
+
+            // Load local storage data
+            let data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : [];
+
             data.forEach(item => {
                 const trElem = document.createElement('tr');
-                trElem.innerHTML = getContent(item, trElem);
+                trElem.setAttribute("data-id", item.id); // assign id to each row
+                trElem.innerHTML = getContent(item);
                 tableBody.append(trElem);
             });
+
             const handleDelete = () => {
                 const deleteBtns = document.querySelectorAll('.delete-btn');
                 deleteBtns.forEach((btn) => {
                     btn.addEventListener('click', () => {
                         const parentTr = btn.closest("tr");
-                        const name = parentTr.children[0].textContent;
-                        const studentClass = parentTr.children[1].textContent;
-                        const age = parentTr.children[2].textContent;
+                        const studentId = parentTr.getAttribute("data-id"); //get student id
 
-                        // Get data from local storage
+                        // get data from local storage
                         let data = JSON.parse(localStorage.getItem('data')) || [];
 
-                        // Filter out the deleted item
-                        data = data.filter(item => item.name !== name || item.class !== studentClass || item.age !== age);
+                        // filter out the deleted student
+                        data = data.filter(item => item.id !== studentId);
 
-                        // Update local storage
+                        // update local storage
                         localStorage.setItem('data', JSON.stringify(data));
 
-                        // Remove row from table
+                        // remove row from table
                         parentTr.remove();
                     });
                 });
             };
 
-            // registering the delete event
+            // register delete event
             handleDelete();
 
-
             const handleForm = (e) => {
-                e.preventDefault() // prevent from page refresh
+                e.preventDefault(); // prevent page refresh
 
-                // get input
-                const nameValue = document.getElementById("name").value.trim()
-                const classValue = document.getElementById("studentClass").value.trim()
-                const ageValue = document.getElementById("age").value.trim()
+                // get input values
+                const nameValue = document.getElementById("name").value.trim();
+                const classValue = document.getElementById("studentClass").value.trim();
+                const ageValue = document.getElementById("age").value.trim();
 
-                //new row
-                const addStudent = document.createElement("tr")
+                // UPDATED: Create a new student object with a unique ID
+                const newData = { id: randomValue(), name: nameValue, class: classValue, age: ageValue };
 
-                const newData = { name: nameValue, class: classValue, age: ageValue }
+                // Get existing data from local storage
+                let data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : [];
+                data.push(newData);
+                localStorage.setItem('data', JSON.stringify(data));
 
-                //local storage. 
-                const data = localStorage.getItem('data') !== null ? JSON.parse(localStorage.getItem('data')) : [];
-                data.push(newData)
-                localStorage.setItem('data', JSON.stringify(data))
+                // Create new table row
+                const studentElem = document.createElement("tr");
+                studentElem.setAttribute("data-id", newData.id); // UPDATED: Assign ID to row
+                studentElem.innerHTML = getContent(newData);
+                tableBody.appendChild(studentElem);
 
-                addStudent.innerHTML = getContent(newData, addStudent);
-                tableBody.appendChild(addStudent);
-                // resiger the delete event 
+                // UPDATED: Register delete event for the new row
                 handleDelete();
+
+                // Reset form
                 form.reset();
-            }
+            };
 
             const handleToggle = (e) => {
-                e.preventDefault()
-                const formDisplay = document.querySelector('.form-container')
-                formDisplay.classList.toggle('showForm')
-            }
+                e.preventDefault();
+                const formDisplay = document.querySelector('.form-container');
+                formDisplay.classList.toggle('showForm');
+            };
 
-            form.addEventListener("submit", handleForm)
-            document.querySelector('.addStudentButton').addEventListener('click', handleToggle)
+            form.addEventListener("submit", handleForm);
+            document.querySelector('.studentElemButton').addEventListener('click', handleToggle);
         });
     </script>
+
 </body>
 
 </html>
