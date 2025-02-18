@@ -10,7 +10,7 @@ Features
 - Edit existing student details.
 - Delete students from the table.
 - Store data in local storage for persistence.
-- Toggle the form visibility for adding and editing students.
+- Toggle the visibility of the form for adding and editing students.
 
 Technologies Used
 - HTML
