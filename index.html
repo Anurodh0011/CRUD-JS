@@ -10,10 +10,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            width: 100vw;
+            min-height: 100vh;
+            width: 100%;
             margin: 0;
             background-color: #f5f5f5;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .main-container {
@@ -21,6 +24,8 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            width: 100%;
+            max-width: 1000px;
         }
 
         .form-container {
@@ -29,11 +34,17 @@
             border-radius: 8px;
             display: flex;
             flex-direction: column;
-            width: 300px;
+            width: 100%;
+            max-width: 400px;
             height: auto;
             gap: 15px;
             transition: opacity 0.3s ease-in-out;
             position: relative;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
         }
 
         input {
@@ -60,8 +71,30 @@
             background-color: #218838;
         }
 
+        .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .cancel-button {
+            background-color: #dc3545;
+        }
+
+        .cancel-button:hover {
+            background-color: #c82333;
+        }
+
+        .table {
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+
         table {
-            width: 60vw;
+            width: 100%;
             border-collapse: collapse;
             background-color: white;
             text-align: center;
@@ -71,13 +104,13 @@
         td {
             border: 1px solid black;
             padding: 8px;
-            white-space: nowrap;
         }
 
         td>button {
             display: inline-block;
-            margin: 0 5px;
-            width: 30%;
+            margin: 2px;
+            width: auto;
+            padding: 6px 10px;
         }
 
         th {
@@ -85,78 +118,64 @@
             color: white;
         }
 
-        .delete-btn {
-            background-color: red;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .delete-btn:hover {
-            background-color: darkred;
-        }
-
-        .edit-btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .edit-btn:hover {
-            background-color: #218838;
-        }
-
         .studentElemButton {
-            background-color: #4CAF50;
-        }
-
-        .studentElemButton:hover {
-            background-color: #218838;
+            max-width: 400px;
         }
 
         .hideForm {
             display: none;
         }
 
-        .showForm {
-            display: block;
+        @media (max-width: 768px) {
+            .table {
+                overflow-x: auto;
+            }
+
+            td,
+            th {
+                white-space: nowrap;
+            }
+
+            .form-container {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            button {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            td>button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="main-container">
-
         <button class="studentElemButton">Add Student</button>
-
         <div class="form-container hideForm">
             <form id="form">
                 <input id="idInput" name="id" value="" placeholder="ID" hidden />
-
                 <div class="form-row">
                     <label for="name">Name</label>
                     <input id="name" name="full-name" type="text" placeholder="Full Name" required>
                 </div>
-
                 <div class="form-row">
                     <label for="studentClass">Class</label>
                     <input id="studentClass" name="class" type="text" placeholder="Class" required>
                 </div>
-
                 <div class="form-row">
                     <label for="age">Age</label>
                     <input id="age" name="age" type="number" min="0" placeholder="Age" required>
                 </div>
-
                 <button type="submit">Save</button>
             </form>
         </div>
-
         <div class="table">
             <table>
                 <thead>
@@ -168,116 +187,165 @@
                     </tr>
                 </thead>
                 <tbody id="table-body">
-
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.querySelector("#form");
-            const tableBody = document.querySelector("#table-body");
-            const formContainer = document.querySelector('.form-container');
-            const nameInput = document.getElementById("name");
-            const classInput = document.getElementById("studentClass");
-            const ageInput = document.getElementById("age");
-            const idInput = document.querySelector("#idInput");
+        // data storage - using localStorage to persist data
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let isEditing = false;
+        let currentId = null;
 
-            function getContent(item) {
-                return `<td>${item.name}</td>
-                <td>${item.class}</td>
-                <td>${item.age}</td>
-                <td>
-                    <button class="edit-btn">Edit</button>
-                    <button class="delete-btn">Delete</button>
-                </td>`;
+        // DOM elements
+        const form = document.getElementById('form');
+        const tableBody = document.getElementById('table-body');
+        const formContainer = document.querySelector('.form-container');
+        const addStudentButton = document.querySelector('.studentElemButton');
+        const nameInput = document.getElementById('name');
+        const classInput = document.getElementById('studentClass');
+        const ageInput = document.getElementById('age');
+        const idInput = document.getElementById('idInput');
+
+        // event Listeners
+        document.addEventListener('DOMContentLoaded', renderTable);
+        form.addEventListener('submit', handleFormSubmit);
+        addStudentButton.addEventListener('click', toggleForm);
+
+        // functions
+        function toggleForm() {
+            formContainer.classList.toggle('hideForm');
+            if (formContainer.classList.contains('hideForm')) {
+                addStudentButton.textContent = 'Add Student';
+                addStudentButton.classList.remove('cancel-button');
+                resetForm();
+            } else {
+                addStudentButton.textContent = 'Cancel';
+                addStudentButton.classList.add('cancel-button');
+            }
+        }
+
+        function resetForm() {
+            form.reset();
+            isEditing = false;
+            currentId = null;
+            idInput.value = '';
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const name = nameInput.value.trim();
+            const studentClass = classInput.value.trim();
+            const age = parseInt(ageInput.value);
+
+            if (!name || !studentClass || isNaN(age)) {
+                alert('Please fill in all fields correctly');
+                return;
             }
 
-            function randomValue() {
-                return Math.random().toString().substr(2, 4);
-            }
-
-            let data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : [];
-
-            function loadTable() {
-                tableBody.innerHTML = "";
-                data.forEach(item => {
-                    const trElem = document.createElement('tr');
-                    trElem.setAttribute("data-id", item.id);
-                    trElem.innerHTML = getContent(item);
-                    tableBody.append(trElem);
-                });
-                handleDelete();
-                handleEdit();
-            }
-
-            function handleDelete() {
-                document.querySelectorAll('.delete-btn').forEach((btn) => {
-                    btn.addEventListener('click', () => {
-                        const parentTr = btn.closest("tr");
-                        const studentId = parentTr.getAttribute("data-id");
-                        data = data.filter((item) => item.id !== studentId);
-                        localStorage.setItem('data', JSON.stringify(data));
-                        parentTr.remove();
-                    });
-                });
-            }
-
-            function handleEdit() {
-                document.querySelectorAll('.edit-btn').forEach((btn) => {
-                    btn.addEventListener('click', () => {
-                        const parentTr = btn.closest("tr");
-                        const studentId = parentTr.getAttribute("data-id");
-                        const student = data.find(item => item.id === studentId);
-
-                        if (student) {
-                            formContainer.classList.add("showForm");
-                            idInput.value = student.id;
-                            nameInput.value = student.name;
-                            classInput.value = student.class;
-                            ageInput.value = student.age;
-                        }
-                    });
-                });
-            }
-
-            function handleForm(e) {
-                e.preventDefault();
-                const id = idInput.value.trim();
-                const nameValue = nameInput.value.trim();
-                const classValue = classInput.value.trim();
-                const ageValue = ageInput.value.trim();
-
-                if (id) {
-                    // Update existing student
-                    data = data.map(item => item.id === id ? { id, name: nameValue, class: classValue, age: ageValue } : item);
-                } else {
-                    // Add new student
-                    const newData = { id: randomValue(), name: nameValue, class: classValue, age: ageValue };
-                    data.push(newData);
+            if (isEditing) {
+                // update existing student
+                const index = students.findIndex(student => student.id === currentId);
+                if (index !== -1) {
+                    students[index] = {
+                        id: currentId,
+                        name,
+                        class: studentClass,
+                        age
+                    };
                 }
-
-                localStorage.setItem('data', JSON.stringify(data));
-                loadTable();
-                form.reset();
-                formContainer.classList.remove("showForm");
+            } else {
+                // add new student
+                const newId = Date.now().toString();
+                students.push({
+                    id: newId,
+                    name,
+                    class: studentClass,
+                    age
+                });
             }
 
-            document.querySelector('.studentElemButton').addEventListener('click', () => {
-                formContainer.classList.toggle('showForm');
-                form.reset();
-                idInput.value = "";
+            // save to localStorage
+            localStorage.setItem('students', JSON.stringify(students));
+
+            // reset and hide form
+            resetForm();
+            toggleForm();
+
+            // re-render table
+            renderTable();
+        }
+
+        function renderTable() {
+            tableBody.innerHTML = '';
+
+            if (students.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center;">No students found</td>
+                `;
+                tableBody.appendChild(row);
+                return;
+            }
+
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.class}</td>
+                    <td>${student.age}</td>
+                    <td>
+                        <button class="edit-btn" data-id="${student.id}">Edit</button>
+                        <button class="delete-btn" data-id="${student.id}">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
             });
 
-            form.addEventListener("submit", handleForm);
+            // add event listeners for edit and delete buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', handleEdit);
+            });
 
-            //inital load
-            loadTable();
-        });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', handleDelete);
+            });
+        }
 
+        function handleEdit(e) {
+            const studentId = e.target.getAttribute('data-id');
+            const student = students.find(s => s.id === studentId);
+
+            if (student) {
+                // fill form with student data
+                nameInput.value = student.name;
+                classInput.value = student.class;
+                ageInput.value = student.age;
+                idInput.value = student.id;
+
+                // set edit mode
+                isEditing = true;
+                currentId = student.id;
+
+                // show form if hidden
+                if (formContainer.classList.contains('hideForm')) {
+                    toggleForm();
+                }
+            }
+        }
+
+        function handleDelete(e) {
+            const studentId = e.target.getAttribute('data-id');
+
+            if (confirm('Are you sure you want to delete this student?')) {
+                students = students.filter(s => s.id !== studentId);
+                localStorage.setItem('students', JSON.stringify(students));
+                renderTable();
+            }
+        }
     </script>
-
 </body>
 
 </html>
