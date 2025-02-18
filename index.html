@@ -4,48 +4,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>CRUD</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .form-container {
+            background-color: antiquewhite;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            height: auto;
+            gap: 15px;
+            transition: opacity 0.3s ease-in-out;
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 60vw;
+            border-collapse: collapse;
+            background-color: white;
+            text-align: center;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            white-space: nowrap;
+        }
+
+        td>button {
+            display: inline-block;
+            margin: 0 5px;
+            width: 30%;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .delete-btn {
+            background-color: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+
+        .edit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .edit-btn:hover {
+            background-color: #218838;
+        }
+
+        .studentElemButton {
+            background-color: #4CAF50;
+        }
+
+        .studentElemButton:hover {
+            background-color: #218838;
+        }
+
+        .hideForm {
+            display: none;
+        }
+
+        .showForm {
+            display: block;
+        }
+    </style>
 </head>
 
 <body>
-    <h2 id="heading">Hello, World!</h2>
-    <button id="button">Click me</button>
-    <button id="reset">Reset</button>
+    <div class="main-container">
+
+        <button class="studentElemButton">Add Student</button>
+
+        <div class="form-container hideForm">
+            <form id="form">
+                <input id="idInput" name="id" value="" placeholder="ID" hidden />
+
+                <div class="form-row">
+                    <label for="name">Name</label>
+                    <input id="name" name="full-name" type="text" placeholder="Full Name" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="studentClass">Class</label>
+                    <input id="studentClass" name="class" type="text" placeholder="Class" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="age">Age</label>
+                    <input id="age" name="age" type="number" min="0" placeholder="Age" required>
+                </div>
+
+                <button type="submit">Save</button>
+            </form>
+        </div>
+
+        <div class="table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Class</th>
+                        <th>Age</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
-        let click = 0
-        const heading = document.getElementById("heading")
-        const button = document.getElementById("button")
-        const reset = document.getElementById("reset")
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("#form");
+            const tableBody = document.querySelector("#table-body");
+            const formContainer = document.querySelector('.form-container');
+            const nameInput = document.getElementById("name");
+            const classInput = document.getElementById("studentClass");
+            const ageInput = document.getElementById("age");
+            const idInput = document.querySelector("#idInput");
 
-        button.addEventListener('click', () => {
-            click++;
-
-            let isElement = document.getElementById("click");
-            if (isElement) {
-                isElement.innerText = click;
-            } else {
-                displayClick()
+            function getContent(item) {
+                return `<td>${item.name}</td>
+                <td>${item.class}</td>
+                <td>${item.age}</td>
+                <td>
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">Delete</button>
+                </td>`;
             }
-            heading.innerText = click % 2 === 0 ? "Hello, World" : "Hello JavaScript"
-        })
 
-        reset.addEventListener('click', () => {
-            click = 0;
-            heading.innerText = "Hello, World"; // Reset heading text
-            let clickElement = document.getElementById("click");
-            if (clickElement) {
-                clickElement.innerText = click;
+            function randomValue() {
+                return Math.random().toString().substr(2, 4);
             }
+
+            let data = localStorage.getItem('data') ? JSON.parse(localStorage.getItem('data')) : [];
+
+            function loadTable() {
+                tableBody.innerHTML = "";
+                data.forEach(item => {
+                    const trElem = document.createElement('tr');
+                    trElem.setAttribute("data-id", item.id);
+                    trElem.innerHTML = getContent(item);
+                    tableBody.append(trElem);
+                });
+                handleDelete();
+                handleEdit();
+            }
+
+            function handleDelete() {
+                document.querySelectorAll('.delete-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const parentTr = btn.closest("tr");
+                        const studentId = parentTr.getAttribute("data-id");
+                        data = data.filter((item) => item.id !== studentId);
+                        localStorage.setItem('data', JSON.stringify(data));
+                        parentTr.remove();
+                    });
+                });
+            }
+
+            function handleEdit() {
+                document.querySelectorAll('.edit-btn').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        const parentTr = btn.closest("tr");
+                        const studentId = parentTr.getAttribute("data-id");
+                        const student = data.find(item => item.id === studentId);
+
+                        if (student) {
+                            formContainer.classList.add("showForm");
+                            idInput.value = student.id;
+                            nameInput.value = student.name;
+                            classInput.value = student.class;
+                            ageInput.value = student.age;
+                        }
+                    });
+                });
+            }
+
+            function handleForm(e) {
+                e.preventDefault();
+                const id = idInput.value.trim();
+                const nameValue = nameInput.value.trim();
+                const classValue = classInput.value.trim();
+                const ageValue = ageInput.value.trim();
+
+                if (id) {
+                    // Update existing student
+                    data = data.map(item => item.id === id ? { id, name: nameValue, class: classValue, age: ageValue } : item);
+                } else {
+                    // Add new student
+                    const newData = { id: randomValue(), name: nameValue, class: classValue, age: ageValue };
+                    data.push(newData);
+                }
+
+                localStorage.setItem('data', JSON.stringify(data));
+                loadTable();
+                form.reset();
+                formContainer.classList.remove("showForm");
+            }
+
+            document.querySelector('.studentElemButton').addEventListener('click', () => {
+                formContainer.classList.toggle('showForm');
+                form.reset();
+                idInput.value = "";
+            });
+
+            form.addEventListener("submit", handleForm);
+
+            //inital load
+            loadTable();
         });
 
-        const displayClick = () => {
-            const addClick = document.createElement('p')
-            addClick.setAttribute("id", 'click')
-            addClick.innerText = click;
-            document.body.appendChild(addClick)
-        }
     </script>
+
 </body>
 
 </html>

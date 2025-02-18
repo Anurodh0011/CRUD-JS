@@ -1,10 +1,5 @@
-for (let i = 0; i < 3; i++) {
-    setTimeout(() => {
-        console.log(i); // 0, 1, 2 (expected behavior)
-    }, 1000);
-}
-
-let a = 3
-{
-    a = 4
-}
+const num = [1, 2, 3, 4, 5]
+const checkEven = num => num % 2 === 0;
+const hasEvenNum = num.some(checkEven)
+const allEvenNum = num.every(checkEven)
+console.log(hasEvenNum, allEvenNum)
